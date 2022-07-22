@@ -1,14 +1,14 @@
 import React from "react";
+import { FilterBar } from "./FilterBar";
 import { Header } from "./Header";
-import { InfiniteScroll } from "./infiniteScroll";
+import { InfiniteQuery } from "./InfiniteQuery";
 import { InfiniteScrollV2 } from "./infiniteScrollV2";
-import { InfiniteScrollV3 } from "./infiniteScrollV3";
 
 export const Test = () => {
   return (
     <div>
       <Header />
-      <InfiniteScrollV2 />
+      <InfiniteQuery />
     </div>
   );
 };

@@ -6,25 +6,37 @@ import {
   InfiniteLoader,
 } from "react-virtualized";
 import { useEffect, useState } from "react";
-import { ProductItem } from "./List";
 import { list, list2 } from "./dummyData";
 import "react-virtualized/styles.css";
-import "./infiniteScroll.scss";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import qs from "qs";
+import { SmallColumnCard } from "./RenderLayout";
+import { FilterBar } from "./FilterBar";
 export const InfiniteScrollV2 = () => {
+  //restore srcroll position
+  // const [queryString, setQueryString] = useState({
+  //   categoryCode: "2032",
+  //   sort: "ALL",
+  // });
+
+  // const navigate = useNavigate();
+  // const search = qs.stringify(queryString);
+
   const [dataList, setDataList] = useState([]);
   const [lastCursor, setLastCursor] = useState("");
   ////infiniteloader //fetch data
   function isRowLoaded({ index }) {
     return !!dataList[index];
   }
+  // const prevQuery = qs.parse(
+  //   window.location.search.slice(1, window.location.search.length)
+  // );
   const loadMoreRows = async () => {
     console.log("fetching 함수 호출됨");
     try {
       const res = await axios.get(
-        `http://kjh.pricegolf.co.kr:8080/api/v1/market-price/models?lastCursor=${lastCursor}&size=30`
+        `http://kjh.pricegolf.co.kr:8080/api/v1/market-price/models?&lastCursor=${lastCursor}&size=30`
       );
       const data = res.data.data.modelList;
       setDataList([...dataList, ...data]);
@@ -54,16 +66,12 @@ export const InfiniteScrollV2 = () => {
         className={"wrapper"}
         onClick={() => sessionStorage.setItem("index", index)}
       >
-        <Link to="/products" style={{ display: "flex", padding: "16px" }}>
-          {/* <img
-            src={list[index].image}
-            style={{ width: "50px", marginRight: "10px" }}
-          /> */}
-          <p>
-            {dataList[index].modelCategory}
+        {/* <p>
+            {dataList[index].modelBrandName}
             {index}
-          </p>
-        </Link>
+          </p> */}
+        {/* <RenderLayout data={dataList} index={index} /> */}
+        <SmallColumnCard data={dataList} index={index} />
       </div>
     );
   }
@@ -91,20 +99,21 @@ export const InfiniteScrollV2 = () => {
             {({ height, scrollTop, isScrolling, onChildScroll }) => (
               <AutoSizer disableHeight>
                 {({ width }) => (
-                  <List
-                    // autoHeight={true}
-                    onRowsRendered={onRowsRendered}
-                    ref={registerChild}
-                    width={width} // 전체 크기
-                    height={height} // 전체 높이 windowScroller의 height는 The height of the viewport.
-                    rowCount={dataList.length} // 항목 개수
-                    rowHeight={60} // 항목 높이
-                    rowRenderer={rowRenderer} // 항목 렌더링 시 쓰는 함수
-                    style={{}} // 전체 스타일 지정
-                    scrollToIndex={10} //스크롤 위치 복원할 때 사용 가능
-                    // isScrolling={isScrolling} //boolean
-                    // Number(sessionStorage.getItem("scrollY"))
-                  />
+                  <>
+                    <List
+                      className="itemList"
+                      onRowsRendered={onRowsRendered}
+                      ref={registerChild}
+                      width={width} // 전체 크기
+                      height={height} // 전체 높이 windowScroller의 height는 The height of the viewport.
+                      rowCount={dataList.length} // 항목 개수
+                      rowHeight={120} // 항목 높이
+                      rowRenderer={rowRenderer} // 항목 렌더링 시 쓰는 함수
+                      style={{}} // 전체 스타일 지정
+                      scrollToIndex={0} //스크롤 위치 복원할 때 사용 가능
+                      // scrollTop={3480} //특정 아이템의 position top 위치를 넣어주면 해당 top 위치를 가진 데이터를 최상단으로 올려준다
+                    />
+                  </>
                 )}
               </AutoSizer>
             )}
@@ -152,3 +161,4 @@ export const InfiniteScrollV2 = () => {
 //grid, list css로 설정 안 됨. 받아온 데이터 배열을 변환시켜서 다른 컴포넌트로 보내줘야 함
 //infiniteLoader: api로 data fetch하는 용도
 //infiniteLoader에서는 scrollToIndex가 먹질 않는다. 또한 scrollToIndex는 해당 index의 아이템을 화면의 최하단으로 스크롤해주는 기능이라서 우리가 생각하는 정확한 위치로 이동시켜주지는 못한다는 한계점이 있다.
+//scrollTop: 개별 아이템마다 position top 위치가 저장되는데 해당 아이템의 top 위치(px)를 넣어주면 그 아이템을 최 상단으로 스크롤해준다.

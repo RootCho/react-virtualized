@@ -1,0 +1,55 @@
+#SmallColumnCard {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  a {
+    color: black;
+  }
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    margin: 0 10px;
+  }
+  a {
+    display: flex;
+    .rank_number {
+      width: 18px;
+    }
+  }
+  .rank_number {
+    white-space: nowrap;
+  }
+  .product_info,
+  .price {
+    display: flex;
+    flex-direction: column;
+  }
+  .price {
+    span {
+      white-space: nowrap;
+      text-align: end;
+    }
+    span:first-of-type {
+      margin-bottom: 6px;
+    }
+    span + span {
+      font-size: 13px;
+      margin: 0;
+    }
+  }
+  .product_info {
+    h4 {
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+  .graytext {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 13px;
+  }
+}

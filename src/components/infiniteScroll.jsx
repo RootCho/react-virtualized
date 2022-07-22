@@ -1,9 +1,7 @@
 import { Grid, List, AutoSizer, WindowScroller } from "react-virtualized";
 import { useState } from "react";
-import { ProductItem } from "./List";
 import { list, list2 } from "./dummyData";
 import "react-virtualized/styles.css";
-import "./infiniteScroll.scss";
 import { Link } from "react-router-dom";
 
 export const InfiniteScroll = ({ next }) => {
