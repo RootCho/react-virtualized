@@ -13,7 +13,9 @@ import axios from "axios";
 import qs from "qs";
 import { SmallColumnCard } from "./RenderLayout";
 import { FilterBar } from "./FilterBar";
-export const InfiniteQuery = () => {
+import { Header } from "./Header";
+
+export const InfiniteQuery = ({ path }) => {
   //restore srcroll position
   const prevQuery = qs.parse(
     window.location.search.slice(1, window.location.search.length)
@@ -23,7 +25,7 @@ export const InfiniteQuery = () => {
   const navigate = useNavigate();
   const search = qs.stringify(queryString);
 
-  const ref = useRef(false);
+  const [state, setState] = useState(false);
   const [dataList, setDataList] = useState([]);
   const [lastCursor, setLastCursor] = useState("");
   ////infiniteloader //fetch data
@@ -35,15 +37,14 @@ export const InfiniteQuery = () => {
     console.log("fetching 함수 loadRows 호출됨");
 
     try {
-      const res = await axios.get(
-        `http://kjh.pricegolf.co.kr:8080/api/v1/market-price/models?${search}&lastCursor=&size=30`
-      );
+      const res = await axios.get(`${path}?${search}&lastCursor=&size=30`);
       const data = res.data.data.modelList;
       setDataList([...data]);
       setLastCursor(res.data.data.lastCursor);
       console.log(dataList.length);
       console.log("lastCursor ? ", lastCursor);
-      ref.current = false;
+      //   ref.current = false;
+      setState(false);
     } catch {
       console.error("fetching error");
     }
@@ -51,7 +52,7 @@ export const InfiniteQuery = () => {
   const loadMoreRows = async () => {
     console.log("fetching 함수 호출됨");
 
-    const url2 = `http://kjh.pricegolf.co.kr:8080/api/v1/market-price/models?${search}&lastCursor=${lastCursor}&size=30`;
+    const url2 = `${path}?${search}&lastCursor=${lastCursor}&size=30`;
     try {
       const res = await axios.get(url2);
       const data = res.data.data.modelList;
@@ -66,7 +67,8 @@ export const InfiniteQuery = () => {
   };
   useEffect(() => {
     navigate({ search: search });
-    ref.current ? loadRows() : loadMoreRows();
+    // ref.current ? loadRows() : loadMoreRows();
+    state ? loadRows() : loadMoreRows();
   }, [queryString.categoryCode, queryString.sort]);
 
   //   useEffect(() => {
@@ -111,26 +113,26 @@ export const InfiniteQuery = () => {
   const handleClick1 = () => {
     setQueryString({ ...queryString, categoryCode: "2032" });
     // setDataList([]);
-    ref.current = true;
+    setState(true);
   };
 
   const handleClick2 = () => {
     setQueryString({ ...queryString, categoryCode: "1" });
     // setDataList([]);
-    ref.current = true;
+    setState(true);
   };
   const handleClick3 = () => {
     setQueryString({ ...queryString, sort: "price_desc" });
     // setDataList([]);
-    ref.current = true;
+    setState(true);
   };
   const handleSort = (e) => {
     setQueryString({ ...queryString, sort: e.target.value });
-    ref.current = true;
+    setState(true);
   };
   const handleCategoryChange = (e) => {
     setQueryString({ ...queryString, categoryCode: e.target.value });
-    ref.current = true;
+    setState(true);
   };
   return (
     <div style={{}}>
@@ -138,16 +140,11 @@ export const InfiniteQuery = () => {
         <button onClick={handleClick1}>아이언</button>
         <button onClick={handleClick2}>드라이버</button>
         <button onClick={handleClick3}>평균가 높은 순</button>
-        <div style={{ display: "flex" }}>
-          <select name="필터" id="" onChange={handleSort}>
-            <option value="price_asc">평균가 낮은 순</option>
-            <option value="price_desc">평균가 높은 순</option>
-          </select>
-          <select name="필터" id="" onChange={handleCategoryChange}>
-            <option value="2032">아이언</option>
-            <option value="2034">페어웨이우드</option>
-          </select>
-        </div>
+        <FilterBar
+          setQueryString={setQueryString}
+          queryString={queryString}
+          setState={setState}
+        />
       </div>
       <InfiniteLoader
         isRowLoaded={isRowLoaded}
@@ -155,30 +152,33 @@ export const InfiniteQuery = () => {
         rowCount={1000000}
       >
         {({ onRowsRendered, registerChild }) => (
-          <WindowScroller>
-            {({ height, scrollTop, isScrolling, onChildScroll }) => (
-              <AutoSizer disableHeight>
-                {({ width }) => (
-                  <>
-                    <List
-                      className="itemList"
-                      onRowsRendered={onRowsRendered}
-                      ref={registerChild}
-                      width={width} // 전체 크기
-                      height={height} // 전체 높이 windowScroller의 height는 The height of the viewport.
-                      rowCount={dataList.length} // 항목 개수
-                      rowHeight={120} // 항목 높이
-                      rowRenderer={rowRenderer} // 항목 렌더링 시 쓰는 함수
-                      style={{}} // 전체 스타일 지정
-                      //   scrollToIndex={{}} //스크롤 위치 복원할 때 사용 가능
-                      scrollTop={ref.current && 0} //특정 아이템의 position top 위치를 넣어주면 해당 top 위치를 가진 데이터를 최상단으로 올려준다
-                      //   deferredMeasurementCache={cache}
-                    />
-                  </>
-                )}
-              </AutoSizer>
-            )}
-          </WindowScroller>
+          <>
+            <WindowScroller>
+              {({ height, scrollTop, isScrolling, onChildScroll }) => (
+                <AutoSizer disableHeight>
+                  {({ width }) => (
+                    <>
+                      <List
+                        className="itemList"
+                        onRowsRendered={onRowsRendered}
+                        ref={registerChild}
+                        width={width} // 전체 크기
+                        height={height} // 전체 높이 windowScroller의 height는 The height of the viewport.
+                        rowCount={dataList.length} // 항목 개수
+                        rowHeight={120} // 항목 높이
+                        rowRenderer={rowRenderer} // 항목 렌더링 시 쓰는 함수
+                        style={{ padding: "16px" }} // 전체 스타일 지정
+                        //   srcollTop={ref.current && 0}
+                        //   scrollToIndex={{}} //스크롤 위치 복원할 때 사용 가능
+                        //특정 아이템의 position top 위치를 넣어주면 해당 top 위치를 가진 데이터를 최상단으로 올려준다
+                        //   deferredMeasurementCache={cache}
+                      />
+                    </>
+                  )}
+                </AutoSizer>
+              )}
+            </WindowScroller>
+          </>
         )}
       </InfiniteLoader>
       {/* <WindowScroller>

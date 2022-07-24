@@ -13,6 +13,7 @@ import axios from "axios";
 import qs from "qs";
 import { SmallColumnCard } from "./RenderLayout";
 import { FilterBar } from "./FilterBar";
+import { Header } from "./Header";
 export const InfiniteScrollV2 = () => {
   //restore srcroll position
   // const [queryString, setQueryString] = useState({
@@ -154,6 +155,7 @@ export const InfiniteScrollV2 = () => {
         // overscanColumnCount={overscanColumnCount}
         // overscanRowCount={overscanRowCount}
       /> */}
+      <Header />
     </div>
   );
 };

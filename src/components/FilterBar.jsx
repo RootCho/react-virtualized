@@ -1,13 +1,15 @@
 import React from "react";
 
-export const FilterBar = ({ setQueryString, queryString, ref }) => {
+export const FilterBar = ({ setQueryString, queryString, setState }) => {
   const handleSort = (e) => {
     setQueryString({ ...queryString, sort: e.target.value });
-    ref.current = true;
+    // ref.current = true;
+    setState(true);
   };
   const handleCategoryChange = (e) => {
     setQueryString({ ...queryString, categoryCode: e.target.value });
-    ref.current = true;
+    // ref.current = true;
+    setState(true);
   };
   return (
     <div style={{ display: "flex" }}>

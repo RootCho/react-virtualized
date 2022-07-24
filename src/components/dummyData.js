@@ -1,6 +1,6 @@
 export const list = [
-  { name: "상품", image: "../testimg.png" },
-  { name: "상품", image: "../testimg.png" },
+  { name: "상품1", image: "../testimg.png" },
+  { name: "상품2", image: "../testimg.png" },
   { name: "상품", image: "../testimg.png" },
   { name: "상품", image: "../testimg.png" },
   { name: "상품", image: "../testimg.png" },
