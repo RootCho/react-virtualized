@@ -10,11 +10,13 @@ export const priceToString = (price: any) => {
 export const SmallColumnCard = ({
   data,
   index,
+  grid,
   type,
   targetRef,
 }: {
   data: any;
   index: number;
+  grid: boolean;
   type: string;
   targetRef: any;
 }) => {
@@ -41,6 +43,7 @@ export const SmallColumnCard = ({
         id="SmallColumnCard"
         // key={idx}
         ref={data.length - 5 === index ? targetRef : null}
+        className={grid ? "grid" : ""}
       >
         <Link to={"model-price/" + Number(data[index].modelCode)}>
           {CardType === "rank" ? (
@@ -88,4 +91,116 @@ SmallColumnCard.defaultProps = {
   type: null,
   targetRef: null,
   dataSrc: "",
+};
+
+// import "./ThumbnailCard.scss";
+//{list2[rowIndex][columnIndex].name}
+export const ThumbnailCard = ({
+  rowIndex,
+  columnIndex,
+  data,
+  type,
+  targetRef,
+}: {
+  rowIndex: number;
+  columnIndex: number;
+  data: any;
+  type: string;
+  targetRef: any;
+}) => {
+  const CardType = ["store"].includes(type) ? type : "";
+  type productList = {
+    modelCode: string;
+    productName: string;
+    productId: number;
+    image: string;
+    salePrice: number;
+    deliveryType: number;
+  };
+  const imageSize = "_N_7_80x80_100_2";
+  return (
+    <>
+      <div
+        id="ThumbnailCard"
+        // key={idx}
+        // ref={data.length - 1 === data.idx ? targetRef : null}
+      >
+        {/* <Link to={"/products/" + Number(data[rowIndex][columnIndex].productId)}> */}
+        {/* <ImageThumbnailWrap
+          img={""}
+          dataSrc={
+            data[rowIndex][columnIndex].image
+              ? `https://pricegolf.co.kr/wys2/file_attach_thumb/${
+                  data[rowIndex][columnIndex].image.slice(
+                    0,
+                    data[rowIndex][columnIndex].image.length - 4
+                  ) +
+                  imageSize +
+                  data[rowIndex][columnIndex].image.slice(
+                    data[rowIndex][columnIndex].image.length - 4,
+                    data[rowIndex][columnIndex].image.length
+                  )
+                }`
+              : ""
+          }
+          className={"product-images"}
+        /> */}
+        <div>
+          <div className="card_right">
+            <p className="ellipsis">{data[rowIndex][columnIndex].modelName}</p>
+            {/* <span className="price">
+              {priceToString(Number(data[rowIndex][columnIndex].salePrice))}
+            </span>
+            <span className="won">원</span>
+            <p className="text12 graytext">
+              {data[rowIndex][columnIndex].deliveryType === 0
+                ? "무료배송"
+                : data[rowIndex][columnIndex].deliveryType === 1
+                ? "유료(착불)배송"
+                : "유료(선결제)배송"}
+            </p>
+            {CardType === "store" ? (
+              <p className="text12 graytext">머머스토어</p>
+            ) : null} */}
+          </div>
+        </div>
+        {/* </Link> */}
+      </div>
+    </>
+  );
+};
+ThumbnailCard.defaultProps = {
+  type: null,
+  targetRef: null,
+  dataSrc: "",
+};
+
+export const ImageThumbnailWrap = ({
+  img,
+  dataSrc,
+  className,
+}: {
+  img: string;
+  dataSrc: string;
+  className: string;
+}) => {
+  return (
+    <div id="ImageThumbnailWrap">
+      <img
+        src={img}
+        alt=""
+        data-src={dataSrc}
+        className={className}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null; // prevents looping
+          currentTarget.src = "/assets/images/default.png";
+        }}
+      />
+    </div>
+  );
+};
+
+ImageThumbnailWrap.defaultProps = {
+  dataSrc: "",
+  className: "",
 };

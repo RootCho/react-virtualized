@@ -4,14 +4,15 @@ import { Header } from "./Header";
 import { InfiniteQuery } from "./InfiniteQuery";
 import { InfiniteScrollV2 } from "./infiniteScrollV2";
 import { Data } from "./data";
+import { InfiniteGrid } from "./InfiniteGrid";
+import { list, list2 } from "./dummyData";
 
 export const Test = () => {
   const path = `http://kjh.pricegolf.co.kr:8080/api/v1/market-price/models`;
   return (
     <div>
       <Header />
-      <InfiniteQuery path={path} />
-      <Data />
+      <InfiniteGrid path={path} />
     </div>
   );
 };

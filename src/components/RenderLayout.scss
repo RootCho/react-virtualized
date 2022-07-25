@@ -52,4 +52,9 @@
     margin-right: 10px;
     font-size: 13px;
   }
+
+  &.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

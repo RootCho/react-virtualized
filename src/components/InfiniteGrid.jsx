@@ -1,5 +1,6 @@
 import {
   Grid,
+  MultiGrid,
   List,
   AutoSizer,
   WindowScroller,
@@ -11,11 +12,10 @@ import "react-virtualized/styles.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
-import { SmallColumnCard } from "./RenderLayout";
+import { SmallColumnCard, ThumbnailCard } from "./RenderLayout";
 import { FilterBar } from "./FilterBar";
-import { Header } from "./Header";
 
-export const InfiniteQuery = ({ path }) => {
+export const InfiniteGrid = ({ path }) => {
   //restore srcroll position
   const prevQuery = qs.parse(
     window.location.search.slice(1, window.location.search.length)
@@ -26,11 +26,23 @@ export const InfiniteQuery = ({ path }) => {
   const search = qs.stringify(queryString);
 
   const [state, setState] = useState(false);
+  //   const [grid, setGrid] = useState(false);
+
   const [dataList, setDataList] = useState([]);
   const [lastCursor, setLastCursor] = useState("");
+  const [array, setArray] = useState([]);
+  const gridArray = () => {
+    const arr = [];
+    for (let i = 0; i < dataList.length; i += 3) {
+      arr.push(dataList.slice(i, i + 3));
+    }
+    setArray(arr);
+    console.log(array);
+  };
   ////infiniteloader //fetch data
   function isRowLoaded({ index }) {
-    return !!dataList[index];
+    // return !!dataList[index];
+    return !!array[index];
   }
 
   const loadRows = async () => {
@@ -40,10 +52,14 @@ export const InfiniteQuery = ({ path }) => {
       const res = await axios.get(`${path}?${search}&lastCursor=&size=30`);
       const data = res.data.data.modelList;
       setDataList([...data]);
+      //   gridArray();
+      //test
+
       setLastCursor(res.data.data.lastCursor);
       console.log(dataList.length);
       console.log("lastCursor ? ", lastCursor);
       //   ref.current = false;
+      dataList && gridArray();
       setState(false);
     } catch {
       console.error("fetching error");
@@ -58,7 +74,9 @@ export const InfiniteQuery = ({ path }) => {
       const data = res.data.data.modelList;
 
       setDataList([...dataList, ...data]);
+
       setLastCursor(res.data.data.lastCursor);
+      dataList && gridArray();
       console.log(dataList.length);
       console.log("lastCursor ? ", lastCursor);
     } catch {
@@ -71,10 +89,6 @@ export const InfiniteQuery = ({ path }) => {
     state ? loadRows() : loadMoreRows();
   }, [queryString.categoryCode, queryString.sort]);
 
-  //   useEffect(() => {
-  //     setQueryString(prevQuery);
-  //   }, [prevQuery]);
-  //////
   function rowRenderer({
     key, // Unique key within array of rows
     index, // Index of row within collection
@@ -83,17 +97,7 @@ export const InfiniteQuery = ({ path }) => {
     style, // Style object to be applied to row (to position it)
   }) {
     return (
-      <div
-        key={key}
-        style={style}
-        className={"wrapper"}
-        onClick={() => sessionStorage.setItem("index", index)}
-      >
-        {/* <p>
-              {dataList[index].modelBrandName}
-              {index}
-            </p> */}
-        {/* <RenderLayout data={dataList} index={index} /> */}
+      <div key={key} style={style}>
         <SmallColumnCard data={dataList} index={index} />
       </div>
     );
@@ -102,10 +106,7 @@ export const InfiniteQuery = ({ path }) => {
   function cellRenderer({ columnIndex, key, rowIndex, style }) {
     return (
       <div key={key} style={style}>
-        {/* {list1[rowIndex][columnIndex]}
-          {rowIndex},{columnIndex} */}
-        {list2[rowIndex][columnIndex].name}
-        {rowIndex},{columnIndex}
+        {array[rowIndex][columnIndex].modelBrandName}
       </div>
     );
   }
@@ -126,20 +127,16 @@ export const InfiniteQuery = ({ path }) => {
     // setDataList([]);
     setState(true);
   };
-  const handleSort = (e) => {
-    setQueryString({ ...queryString, sort: e.target.value });
-    setState(true);
-  };
-  const handleCategoryChange = (e) => {
-    setQueryString({ ...queryString, categoryCode: e.target.value });
-    setState(true);
-  };
+  const handleGrid = () => {};
+  //
+
   return (
-    <div>
+    <div style={{}}>
       <div>
         <button onClick={handleClick1}>아이언</button>
         <button onClick={handleClick2}>드라이버</button>
         <button onClick={handleClick3}>평균가 높은 순</button>
+        <button onClick={handleGrid}>그리드/리스트</button>
         <FilterBar
           setQueryString={setQueryString}
           queryString={queryString}
@@ -157,9 +154,8 @@ export const InfiniteQuery = ({ path }) => {
               {({ height, scrollTop, isScrolling, onChildScroll }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
-                    <>
-                      <List
-                        className="itemList"
+                    <div>
+                      {/* <List
                         onRowsRendered={onRowsRendered}
                         ref={registerChild}
                         width={width} // 전체 크기
@@ -167,15 +163,24 @@ export const InfiniteQuery = ({ path }) => {
                         rowCount={dataList.length} // 항목 개수
                         rowHeight={120} // 항목 높이
                         rowRenderer={rowRenderer} // 항목 렌더링 시 쓰는 함수
-                        style={{
-                          padding: "16px",
-                        }} // 전체 스타일 지정
+                        style={{ padding: "16px" }} // 전체 스타일 지정
                         //   srcollTop={ref.current && 0}
-                        //   scrollToIndex={{}} //스크롤 위치 복원할 때 사용 가능
+                        scrollToIndex={state && 0} //스크롤 위치 복원할 때 사용 가능
                         //특정 아이템의 position top 위치를 넣어주면 해당 top 위치를 가진 데이터를 최상단으로 올려준다
                         //   deferredMeasurementCache={cache}
+                      /> */}
+                      <Grid
+                        onRowsRendered={onRowsRendered}
+                        ref={registerChild}
+                        cellRenderer={cellRenderer}
+                        columnCount={3}
+                        columnWidth={100}
+                        height={height}
+                        rowCount={array.length} //불러올 데이터 항목 개수
+                        rowHeight={100}
+                        width={width}
                       />
-                    </>
+                    </div>
                   )}
                 </AutoSizer>
               )}
@@ -183,46 +188,14 @@ export const InfiniteQuery = ({ path }) => {
           </>
         )}
       </InfiniteLoader>
-      {/* <WindowScroller>
-          {({ height, scrollTop, isScrolling, onChildScroll }) => (
-            <AutoSizer disableHeight>
-              {({ width }) => (
-                <List
-                  // autoHeight={true}
-                  className="TodoList"
-                  width={width} // 전체 크기
-                  height={height} // 전체 높이 windowScroller의 height는 The height of the viewport.
-                  rowCount={list.length} // 항목 개수
-                  rowHeight={80} // 항목 높이
-                  rowRenderer={rowRenderer} // 항목 렌더링 시 쓰는 함수
-                  style={{}} // 전체 스타일 지정
-                  scrollToIndex={0} //스크롤 위치 복원할 때 사용 가능
-                  // isScrolling={isScrolling} //boolean
-                  // scrollTop={scrollTop}
-                  // Number(sessionStorage.getItem("scrollY"))
-                />
-              )}
-            </AutoSizer>
-          )}
-        </WindowScroller> */}
-
-      {/* <Grid
-          cellRenderer={cellRenderer}
-          columnCount={3}
-          columnWidth={100}
-          height={window.visualViewport.height}
-          rowCount={list2.length} //불러올 데이터 항목 개수
-          rowHeight={100}
-          width={300}
-          // overscanColumnCount={overscanColumnCount}
-          // overscanRowCount={overscanRowCount}
-        /> */}
     </div>
   );
 };
 
-//grid, list css로 설정 안 됨. 받아온 데이터 배열을 변환시켜서 다른 컴포넌트로 보내줘야 함
+//grid, list css로 설정 안 됨. grid의 경우 데이터를 이차원 배열로 만들어준 다음 렌더해야함. It is not common to use InfiniteLoader and Grid together ...
 //infiniteLoader: api로 data fetch하는 용도
 //infiniteLoader에서는 scrollToIndex가 먹질 않는다. 또한 scrollToIndex는 해당 index의 아이템을 화면의 최하단으로 스크롤해주는 기능이라서 우리가 생각하는 정확한 위치로 이동시켜주지는 못한다는 한계점이 있다.
 //scrollTop: 개별 아이템마다 position top 위치가 저장되는데 해당 아이템의 top 위치(px)를 넣어주면 그 아이템을 최 상단으로 스크롤해준다.
-//ref의 값에 따라 호출하는 함수를 다르게 설정한다.
+//state의 값에 따라 호출하는 함수를 다르게 설정한다.
+//state===true ? 초기데이터 30개 호출+스크롤위치 최상단(필터버튼) : 그 다음 데이터 30개 호출 (스크롤)
+//본 라이브러리에서는 window.scrollTo가 먹히지 않는다.
