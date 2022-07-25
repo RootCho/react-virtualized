@@ -39,6 +39,9 @@ export const InfiniteGrid = ({ path }) => {
     setArray(arr);
     console.log(array);
   };
+  useEffect(() => {
+    gridArray();
+  }, [dataList]);
   ////infiniteloader //fetch data
   function isRowLoaded({ index }) {
     // return !!dataList[index];
@@ -170,12 +173,13 @@ export const InfiniteGrid = ({ path }) => {
                         //   deferredMeasurementCache={cache}
                       /> */}
                       <Grid
-                        onRowsRendered={onRowsRendered}
+                        onSectionRendered={onRowsRendered}
                         ref={registerChild}
                         cellRenderer={cellRenderer}
                         columnCount={3}
                         columnWidth={100}
                         height={height}
+                        // overscanColumnCount={100000}
                         rowCount={array.length} //불러올 데이터 항목 개수
                         rowHeight={100}
                         width={width}
