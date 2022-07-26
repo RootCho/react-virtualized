@@ -120,52 +120,60 @@ export const ThumbnailCard = ({
   const imageSize = "_N_7_80x80_100_2";
   return (
     <>
-      <div
-        id="ThumbnailCard"
-        // key={idx}
-        // ref={data.length - 1 === data.idx ? targetRef : null}
-      >
-        {/* <Link to={"/products/" + Number(data[rowIndex][columnIndex].productId)}> */}
-        {/* <ImageThumbnailWrap
-          img={""}
-          dataSrc={
-            data[rowIndex][columnIndex].image
-              ? `https://pricegolf.co.kr/wys2/file_attach_thumb/${
-                  data[rowIndex][columnIndex].image.slice(
-                    0,
-                    data[rowIndex][columnIndex].image.length - 4
-                  ) +
-                  imageSize +
-                  data[rowIndex][columnIndex].image.slice(
-                    data[rowIndex][columnIndex].image.length - 4,
-                    data[rowIndex][columnIndex].image.length
-                  )
-                }`
-              : ""
-          }
-          className={"product-images"}
-        /> */}
-        <div>
-          <div className="card_right">
-            <p className="ellipsis">{data[rowIndex][columnIndex].modelName}</p>
-            {/* <span className="price">
-              {priceToString(Number(data[rowIndex][columnIndex].salePrice))}
-            </span>
-            <span className="won">원</span>
-            <p className="text12 graytext">
-              {data[rowIndex][columnIndex].deliveryType === 0
-                ? "무료배송"
-                : data[rowIndex][columnIndex].deliveryType === 1
-                ? "유료(착불)배송"
-                : "유료(선결제)배송"}
-            </p>
-            {CardType === "store" ? (
-              <p className="text12 graytext">머머스토어</p>
-            ) : null} */}
+      {/* 데이터가 존재할때만 렌더 */}
+      {data[rowIndex][columnIndex] && (
+        <div
+          id="ThumbnailCard"
+          // key={idx}
+          // ref={data.length - 1 === data.idx ? targetRef : null}
+          style={{ padding: "16px" }}
+        >
+          {/* <Link to={"/products/" + Number(data[rowIndex][columnIndex].productId)}> */}
+          {/* <img
+            style={{ width: "100px" }}
+            src={
+              data[rowIndex][columnIndex].image
+                ? `https://pricegolf.co.kr/wys2/file_attach_thumb/${
+                    data[rowIndex][columnIndex].image.slice(
+                      0,
+                      data[rowIndex][columnIndex].image.length - 4
+                    ) +
+                    imageSize +
+                    data[rowIndex][columnIndex].image.slice(
+                      data[rowIndex][columnIndex].image.length - 4,
+                      data[rowIndex][columnIndex].image.length
+                    )
+                  }`
+                : ""
+            }
+            alt={""}
+            className={"product-images"}
+          /> */}
+          <img
+            src={`http://pricegolf.co.kr/upload/model/${data[rowIndex][columnIndex].modelCode}.jpg`}
+            className={"product-images"}
+            // onError={onErrorImg}
+            alt=""
+            style={{ width: "20px" }}
+          />
+          <div>
+            <div className="card_right">
+              <p className="ellipsis">
+                {data[rowIndex][columnIndex].modelName}
+              </p>
+
+              <p style={{ color: "gray", fontSize: "13px" }}>
+                {data[rowIndex][columnIndex].deliveryType === 0
+                  ? "무료배송"
+                  : data[rowIndex][columnIndex].deliveryType === 1
+                  ? "유료(착불)배송"
+                  : "유료(선결제)배송"}
+              </p>
+            </div>
           </div>
+          {/* </Link> */}
         </div>
-        {/* </Link> */}
-      </div>
+      )}
     </>
   );
 };

@@ -1,20 +1,20 @@
 import {
-  Grid,
+  // Grid,
   MultiGrid,
   List,
   AutoSizer,
   WindowScroller,
-  InfiniteLoader,
+  // InfiniteLoader,
 } from "react-virtualized";
+import InfiniteLoader from "react-window-infinite-loader";
+import { FixedSizeGrid as Grid } from "react-window";
 import { useEffect, useRef, useState } from "react";
-import { list, list2 } from "./dummyData";
 import "react-virtualized/styles.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
 import { SmallColumnCard, ThumbnailCard } from "./RenderLayout";
 import { FilterBar } from "./FilterBar";
-
 export const InfiniteGrid = ({ path }) => {
   //restore srcroll position
   const prevQuery = qs.parse(
@@ -31,6 +31,7 @@ export const InfiniteGrid = ({ path }) => {
   const [dataList, setDataList] = useState([]);
   const [lastCursor, setLastCursor] = useState("");
   const [array, setArray] = useState([]);
+
   const gridArray = () => {
     const arr = [];
     for (let i = 0; i < dataList.length; i += 3) {
@@ -44,8 +45,8 @@ export const InfiniteGrid = ({ path }) => {
   }, [dataList]);
   ////infiniteloader //fetch data
   function isRowLoaded({ index }) {
-    // return !!dataList[index];
-    return !!array[index];
+    return !!dataList[index];
+    // return !!array[index];
   }
 
   const loadRows = async () => {
@@ -55,35 +56,38 @@ export const InfiniteGrid = ({ path }) => {
       const res = await axios.get(`${path}?${search}&lastCursor=&size=30`);
       const data = res.data.data.modelList;
       setDataList([...data]);
-      //   gridArray();
-      //test
 
       setLastCursor(res.data.data.lastCursor);
       console.log(dataList.length);
       console.log("lastCursor ? ", lastCursor);
       //   ref.current = false;
       dataList && gridArray();
-      setState(false);
     } catch {
       console.error("fetching error");
     }
+    setState(false);
   };
   const loadMoreRows = async () => {
     console.log("fetching 함수 호출됨");
+    if (lastCursor !== undefined) {
+      const url2 = `${path}?${search}&lastCursor=${lastCursor}&size=30`;
 
-    const url2 = `${path}?${search}&lastCursor=${lastCursor}&size=30`;
-    try {
-      const res = await axios.get(url2);
-      const data = res.data.data.modelList;
+      try {
+        const res = await axios.get(url2);
+        const data = res.data.data.modelList;
 
-      setDataList([...dataList, ...data]);
+        setDataList([...dataList, ...data]);
+        // for (let i = 0; i < data.length; i += 3) {
+        //   array.push(data.slice(i, i + 3));
+        // }
 
-      setLastCursor(res.data.data.lastCursor);
-      dataList && gridArray();
-      console.log(dataList.length);
-      console.log("lastCursor ? ", lastCursor);
-    } catch {
-      console.error("fetching error");
+        setLastCursor(res.data.data.lastCursor);
+        dataList && gridArray();
+        console.log(dataList.length);
+        console.log("lastCursor ? ", lastCursor);
+      } catch {
+        console.error("fetching error");
+      }
     }
   };
   useEffect(() => {
@@ -106,10 +110,14 @@ export const InfiniteGrid = ({ path }) => {
     );
   }
 
-  function cellRenderer({ columnIndex, key, rowIndex, style }) {
+  function cellRenderer({ columnIndex, rowIndex, style }) {
     return (
-      <div key={key} style={style}>
-        {array[rowIndex][columnIndex].modelBrandName}
+      <div style={style}>
+        <ThumbnailCard
+          data={array}
+          columnIndex={columnIndex}
+          rowIndex={rowIndex}
+        />
       </div>
     );
   }
@@ -134,7 +142,7 @@ export const InfiniteGrid = ({ path }) => {
   //
 
   return (
-    <div style={{}}>
+    <div style={{ height: "100vh" }}>
       <div>
         <button onClick={handleClick1}>아이언</button>
         <button onClick={handleClick2}>드라이버</button>
@@ -146,19 +154,54 @@ export const InfiniteGrid = ({ path }) => {
           setState={setState}
         />
       </div>
-      <InfiniteLoader
-        isRowLoaded={isRowLoaded}
-        loadMoreRows={loadMoreRows}
-        rowCount={1000000}
-      >
-        {({ onRowsRendered, registerChild }) => (
-          <>
-            <WindowScroller>
-              {({ height, scrollTop, isScrolling, onChildScroll }) => (
-                <AutoSizer disableHeight>
-                  {({ width }) => (
-                    <div>
-                      {/* <List
+      <AutoSizer disableHeight>
+        {({ width }) => (
+          <InfiniteLoader
+            isItemLoaded={(index) => index < dataList.length}
+            loadMoreItems={loadMoreRows}
+            itemCount={dataList.length + 1}
+          >
+            {({ onItemsRendered, ref }) => {
+              // onItemsRendered는 Grid가 아닌 List를 사용하면 <List onItemsRendered={onItemsRendered} />이렇게 넘겨주면 됩니다.
+              // 그러나 Grid를 사용하면 리스트의 바닥에 스크롤이 도달해도 자동으로 onItemsRendered가 실행 되지 않습니다. 그래서 아래처럼 임의 함수를 만들어서 <Grid onItemsRendered={newItemsRendered} /> 형태로 넘깁니다.
+
+              const newItemsRendered = (gridData) => {
+                const useOverscanForLoading = true;
+                const {
+                  visibleRowStartIndex,
+                  visibleRowStopIndex,
+                  visibleColumnStopIndex,
+                  overscanRowStartIndex,
+                  overscanRowStopIndex,
+                  overscanColumnStopIndex,
+                } = gridData;
+
+                const endCol =
+                  (useOverscanForLoading || true
+                    ? overscanColumnStopIndex
+                    : visibleColumnStopIndex) + 1;
+
+                const startRow =
+                  useOverscanForLoading || true
+                    ? overscanRowStartIndex
+                    : visibleRowStartIndex;
+                const endRow =
+                  useOverscanForLoading || true
+                    ? overscanRowStopIndex
+                    : visibleRowStopIndex;
+
+                const visibleStartIndex = startRow * endCol;
+                const visibleStopIndex = endRow * endCol;
+
+                onItemsRendered({
+                  //call onItemsRendered from InfiniteLoader so it can load more if needed
+                  visibleStartIndex,
+                  visibleStopIndex,
+                });
+              };
+              return (
+                <div>
+                  {/* <List
                         onRowsRendered={onRowsRendered}
                         ref={registerChild}
                         width={width} // 전체 크기
@@ -172,26 +215,26 @@ export const InfiniteGrid = ({ path }) => {
                         //특정 아이템의 position top 위치를 넣어주면 해당 top 위치를 가진 데이터를 최상단으로 올려준다
                         //   deferredMeasurementCache={cache}
                       /> */}
-                      <Grid
-                        onSectionRendered={onRowsRendered}
-                        ref={registerChild}
-                        cellRenderer={cellRenderer}
-                        columnCount={3}
-                        columnWidth={100}
-                        height={height}
-                        // overscanColumnCount={100000}
-                        rowCount={array.length} //불러올 데이터 항목 개수
-                        rowHeight={100}
-                        width={width}
-                      />
-                    </div>
-                  )}
-                </AutoSizer>
-              )}
-            </WindowScroller>
-          </>
+                  <Grid
+                    onItemsRendered={newItemsRendered}
+                    ref={ref}
+                    itemCount={array.length + 1}
+                    itemData={array}
+                    columnCount={3}
+                    columnWidth={width / 3}
+                    height={window.visualViewport.height}
+                    rowCount={array.length} //불러올 데이터 항목 개수
+                    rowHeight={130}
+                    width={width}
+                  >
+                    {cellRenderer}
+                  </Grid>
+                </div>
+              );
+            }}
+          </InfiniteLoader>
         )}
-      </InfiniteLoader>
+      </AutoSizer>
     </div>
   );
 };

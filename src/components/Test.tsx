@@ -13,6 +13,7 @@ export const Test = () => {
     <div>
       <Header />
       <InfiniteGrid path={path} />
+      {/* <ProductMain list={list2} params={undefined} /> */}
     </div>
   );
 };
